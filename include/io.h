@@ -1,9 +1,9 @@
-#ifndef WI_IO_H__
-#define WI_IO_H__
+#ifndef _WI_IO_H_
+#define _WI_IO_H_
 
 #include <stdio.h>
 #include "trie.h"
 
 struct trie_node *read_rtrie(char *filename);
 
-#endif // WI_IO_H__
+#endif // _WI_IO_H_

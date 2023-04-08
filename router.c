@@ -3,18 +3,19 @@
 #include "protocols.h"
 #include "trie.h"
 #include "io.h"
+#include "list.h"
 
 #define get_best_route trie_search
 
 void decrease_ttl(struct iphdr *ip_hdr) {
-	uint16_t old_ttl = *((uint16_t *)ip_hdr->ttl);
-	ip_hdr->check -= (~old_ttl) + *((uint16_t *)(--ip_hdr->ttl)) + 1;
+	uint16_t old_ttl = *((uint16_t *)(&ip_hdr->ttl));
+	ip_hdr->check -= (~old_ttl) + *((uint16_t *)(&(--ip_hdr->ttl))) + 1;
 }
 
 struct list arp_table;
 
 struct arp_entry *get_arp_entry(uint32_t given_ip) {
-	for (list entry = arp_table; entry; entry = entry->next)
+	for (struct list entry = arp_table; entry; entry = entry->next)
 		if (((arp_entry *)(entry->element))->ip == given_ip)
 			return (arp_entry *)(entry->element);
 	return NULL;

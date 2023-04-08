@@ -1,5 +1,5 @@
-#ifndef TRIE_H__
-#define TRIE_H__
+#ifndef _WI_TRIE_H_
+#define _WI_TRIE_H_
 
 #include <stdlib.h>
 
@@ -19,4 +19,4 @@ void trie_insert(struct trie_node *trie,
 struct route_table_entry *trie_search(struct trie_node *trie,
                                       uint32_t ntohl_dest_ip);
 
-#endif // TRIE_H__
+#endif // _WI_TRIE_H_

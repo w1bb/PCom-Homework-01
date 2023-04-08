@@ -12,4 +12,6 @@ struct cell
 extern list cons(void *element, list l);
 extern list cdr_and_free(list l);
 
+void list_free(list l, void (*free_elem)(void *));
+
 #endif /* _LIST_H_ */

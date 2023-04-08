@@ -15,3 +15,11 @@ list cdr_and_free(list l)
 	free(l);
 	return temp;
 }
+
+void list_free(list l, void (*free_elem)(void *)) {
+	while (l) {
+		if (free_elem)
+			free_elem(l->element);
+		l = cdr_and_free(l);
+	}
+}

@@ -15,5 +15,5 @@ struct trie_node *read_rtrie(char *filename) {
         trie_insert(rtrie, rentry);
     }
     fclose(fin);
-    return rtire;
+    return rtrie;
 }

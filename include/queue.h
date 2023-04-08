@@ -8,7 +8,7 @@
 struct queue {
     list head;
     list tail;
-}
+};
 
 typedef struct queue *queue;
 

@@ -2,6 +2,12 @@
 #define _WI_TRIE_H_
 
 #include <stdlib.h>
+#include <stdint.h>
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include "lib.h"
 
 struct trie_node {
     struct route_table_entry *rentry;

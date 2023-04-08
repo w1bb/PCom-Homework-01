@@ -142,6 +142,8 @@ void send_arp_reply(struct arp_header *arp_hdr, queue *q) {
   }
 }
 
+
+
 void no_mac_situation(struct ether_header *eth_hdr, packet *m, queue *q,
                       struct route_table_entry *best) {
   // put package in queue

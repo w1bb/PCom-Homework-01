@@ -139,13 +139,10 @@ int main(int argc, char *argv[]) {
 		
         if (ntohs(eth_hdr->ether_type) == ETHERTYPE_ARP) {
             struct arp_header *arp_hdr = (struct arp_header *)(frame_data + sizeof(struct ether_header));
-            if (ntohs(arp_hdr->op) == ARPOP_REQUEST) {
+            if (ntohs(arp_hdr->op) == ARPOP_REQUEST)
                 send_arp_request(interface, eth_hdr, arp_hdr);
-                continue;
-            } else if (ntohs(arp_hdr->op) == ARPOP_REPLY) {
+            else if (ntohs(arp_hdr->op) == ARPOP_REPLY)
                 send_arp_reply(&arp_table, arp_hdr, &q);
-                continue;
-            }
         } else if (ntohs(eth_hdr->ether_type) == ETHERTYPE_IP) {
             struct iphdr *ip_hdr = (struct iphdr *)(frame_data + sizeof(struct ether_header));
             struct icmphdr *icmp_hdr = NULL;
@@ -156,13 +153,11 @@ int main(int argc, char *argv[]) {
             inet_aton(get_interface_ip(interface), &ip_router);
 
             if (send_icmp_echo(ip_router, eth_hdr, ip_hdr, icmp_hdr,
-                               length, frame_data, interface)) {
+                               length, frame_data, interface))
                 continue;
-            }
             // Compute checksum
-            if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr))) {
+            if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr)))
                 continue;
-            }
             // Check for TLE
             if (ip_hdr->ttl <= 1) {
                 send_icmp(ip_hdr->saddr, ip_hdr->daddr,

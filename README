@@ -1,0 +1,24 @@
+Valentin-Ioan Vintilă - 323CA
+-----------------------------
+
+Tema este rezolvată în întregime, obținând 100p local.
+
+Pentru a eficientiza căutarea original liniară, am utilizat trie-uri la nivel de
+biți. Implementarea acestora se găsește în `lib/trie.c`.
+
+Citirea tabelei de rutare va fi făcută stocând de fapt trie-uri, ceea ce
+presupune scrierea unei funcții dedicate pentru transpunerea în memorie a
+fișierului citit (vezi `lib/io.c`).
+
+Tabela de ARP este suficient de bună sub formă de liste (puteau fi utilizați
+vectori alocați dinamic, însă listele erau deja implementate, iar căutarea în
+tabela ARP poate fi făcută liniar fără probleme).
+
+În `router.c`, am scris două funcții ajutătoare pentru a comunica eficient:
+send_arp() și send_icmp(). Ambele sunt utilizate pentru funcții dedicate, precum
+send_arp_reply(), send_arp_request() și send_icmp_echo().
+
+Toată memoria este (sper) eliberată corespunzător. M-am ferit să utilizez
+structurile definite în `include/protocols.h`, optând în schimb pentru cele din
+standardul linux (a se vedea `include/includes.h`).
+

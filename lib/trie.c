@@ -26,22 +26,26 @@ void trie_insert(struct trie_node *trie,
     uint32_t ntohl_prefix = ntohl(rentry->prefix);
     for (uint32_t i = 0x80000000; i & ntohl_mask; i >>= (uint32_t)1) {
         int p = (ntohl_prefix & i) ? 1 : 0;
+        printf("%d", p);
         if (!current_node->nodes[p])
             current_node->nodes[p] = trie_create();
         current_node = current_node->nodes[p];
     }
+    printf("\n");
     current_node->rentry = rentry;
 }
 
 struct route_table_entry *trie_search(struct trie_node *trie,
-                                      uint32_t ntohl_dest_ip) {
+                                      uint32_t dest_ip) {
     struct trie_node *current_node = trie;
-    // uint32_t ntohl_dest_ip = ntohl(dest_ip);
+    uint32_t ntohl_dest_ip = ntohl(dest_ip);
     for (uint32_t i = 0x80000000; i; i >>= (uint32_t)1) {
         int p = (ntohl_dest_ip & i) ? 1 : 0;
+        printf("%d", p);
         if (!current_node->nodes[p])
             break;
         current_node = current_node->nodes[p];
     }
+    printf("\n");
     return (current_node == trie) ? NULL : current_node->rentry;
 }

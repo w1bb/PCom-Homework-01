@@ -11,8 +11,10 @@ struct trie_node *read_rtrie(char *filename) {
         rentry->prefix = inet_addr(prefix);
         rentry->next_hop = inet_addr(next_hop);
         rentry->mask = inet_addr(mask);
-        rentry->interface = inet_addr(interface);
+        rentry->interface = atoi(interface);
+        printf("Read:  %d %d %d %d\n", rentry->prefix, rentry->next_hop, rentry->mask, rentry->interface);
         trie_insert(rtrie, rentry);
+        // printf("Searching yields:  %p\n", trie_search(rtire))
     }
     fclose(fin);
     return rtrie;

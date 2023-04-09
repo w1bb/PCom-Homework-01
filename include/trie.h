@@ -23,6 +23,6 @@ void trie_insert(struct trie_node *trie,
                  struct route_table_entry *rentry);
 
 struct route_table_entry *trie_search(struct trie_node *trie,
-                                      uint32_t ntohl_dest_ip);
+                                      uint32_t dest_ip);
 
 #endif // _WI_TRIE_H_

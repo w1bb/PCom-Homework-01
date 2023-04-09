@@ -198,7 +198,7 @@ int send_icmp_echo(struct in_addr ip_router,
 
 int main(int argc, char *argv[])
 {
-
+    setvbuf(stdout, NULL, _IONBF, 0);
 	char frame_data[2048];
 
 	// Do not modify this line
@@ -216,11 +216,13 @@ int main(int argc, char *argv[])
 		size_t length;
 
 		interface = recv_from_any_link(frame_data, &length);
+        printf("Received sth of length %ld\n", length);
 		DIE(interface < 0, "recv_from_any_links");
 
 		struct ether_header *eth_hdr = (struct ether_header *)frame_data;
 		
         if (ntohs(eth_hdr->ether_type) == ETHERTYPE_ARP) {
+            printf("That was ETHERTYPE_ARP\n");
             struct arp_header *arp_hdr = (struct arp_header *)(frame_data + sizeof(struct ether_header));
             if (ntohs(arp_hdr->op) == ARPOP_REQUEST) {
                 send_arp_request(interface, eth_hdr, arp_hdr);
@@ -230,6 +232,7 @@ int main(int argc, char *argv[])
                 continue;
             }
         } else if (ntohs(eth_hdr->ether_type) == ETHERTYPE_IP) {
+            printf("That was ETHERTYPE_IP\n");
             struct iphdr *ip_hdr = (struct iphdr *)(frame_data + sizeof(struct ether_header));
             struct icmphdr *icmp_hdr = (struct icmphdr *)
                                        (frame_data + sizeof(struct ether_header) + sizeof(struct iphdr));
@@ -238,15 +241,20 @@ int main(int argc, char *argv[])
             inet_aton(get_interface_ip(interface), &ip_router);
 
             if (send_icmp_echo(ip_router, eth_hdr, ip_hdr, icmp_hdr,
-                               length, frame_data, interface))
+                               length, frame_data, interface)) {
+                printf("Ended at send_icmp_echo\n");
                 continue;
+            }
             
             // Compute checksum
-            if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr)))
+            if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr))) {
+                printf("Ended at checksum\n");
                 continue;
+            }
             
             // Check for TLE
             if (ip_hdr->ttl <= 1) {
+                printf("Ended at TLE\n");
                 send_icmp(ip_hdr->saddr, ip_hdr->daddr,
                           eth_hdr->ether_dhost, eth_hdr->ether_shost,
                           ICMP_TIME_EXCEEDED, 0, interface,
@@ -259,6 +267,7 @@ int main(int argc, char *argv[])
             
             // Check if destination is reachable
             if (!best_route) {
+                printf("Ended at best_route\n");
                 send_icmp(ip_hdr->saddr, ip_hdr->daddr,
                           eth_hdr->ether_dhost, eth_hdr->ether_shost,
                           ICMP_DEST_UNREACH, 0, interface,

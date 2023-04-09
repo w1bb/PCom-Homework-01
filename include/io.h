@@ -1,6 +1,7 @@
 #ifndef _WI_IO_H_
 #define _WI_IO_H_
 
+#include <string.h>
 #include <stdio.h>
 #include "trie.h"
 

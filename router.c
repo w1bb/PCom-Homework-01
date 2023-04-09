@@ -27,6 +27,7 @@ void decrease_ttl(struct iphdr *ip_hdr) {
 list arp_table;
 
 struct arp_entry *get_arp_entry(uint32_t given_ip) {
+    printf(">>>>>>>>>>>JUST PRINTING STH %p\n", arp_table);
 	for (list entry = arp_table; entry; entry = entry->next)
 		if (((struct arp_entry *)(entry->element))->ip == given_ip)
 			return (struct arp_entry *)(entry->element);
@@ -78,11 +79,14 @@ void send_arp_reply(struct arp_header *arp_hdr, queue *q) {
 	struct arp_entry *new_entry = malloc(sizeof(struct arp_entry));
 	new_entry->ip = arp_hdr->spa;
 	memcpy(new_entry->mac, arp_hdr->sha, 6); 
-	cons(new_entry, arp_table);
+	arp_table = cons(new_entry, arp_table);
+    printf("! ! ! ! Consing with ip %u\n", new_entry->ip);
 	while (!queue_empty(*q)) {
-		void *length_p = queue_deq(*q);
-		void *frame_data_p = queue_deq(*q);
+        printf("Freeing up the queue...\n");
 		void *interface_p = queue_deq(*q);
+		void *frame_data_p = queue_deq(*q);
+		void *length_p = queue_deq(*q);
+        printf(">>>FIND %d %lu...\n", *(int *)interface_p, *(size_t *)length_p);
 
 		struct ether_header *new_eth_hdr = (struct ether_header *)frame_data_p;
 		memcpy(new_eth_hdr->ether_dhost, arp_hdr->sha, 6); 
@@ -96,20 +100,26 @@ void send_arp_reply(struct arp_header *arp_hdr, queue *q) {
 
 void missing_mac(int length, char *frame_data, size_t interface,
                  queue *q, struct route_table_entry *best_route) {
-    size_t *interface_p = malloc(sizeof(size_t));
+    int *interface_p = malloc(sizeof(int));
     *interface_p = interface;
     queue_enq(*q, interface_p);
-    char *frame_data_p = malloc(sizeof(frame_data));
+    printf("[ missing mac ] Added to queue\n");
+
+    char *frame_data_p = malloc(length + 1);
+    // TODO - might need to free
     memcpy(frame_data_p, frame_data, length);
     queue_enq(*q, frame_data_p);
-    int *length_p = malloc(sizeof(int));
+    
+    size_t *length_p = malloc(sizeof(size_t));
     *length_p = length;
     queue_enq(*q, length_p);
+
+    printf(">>>PUSH %d %lu...\n", *(int *)interface_p, *(size_t *)length_p);
 
     struct ether_header *eth_hdr = (struct ether_header *)frame_data;
     get_interface_mac(best_route->interface, eth_hdr->ether_shost);
     
-    memset(eth_hdr->ether_dhost, 0xff, 6 * sizeof(u_char));
+    memset(eth_hdr->ether_dhost, 0xff, 6);
     eth_hdr->ether_type = htons(ETHERTYPE_ARP);
 
     struct in_addr best_interface;
@@ -225,9 +235,11 @@ int main(int argc, char *argv[])
             printf("That was ETHERTYPE_ARP\n");
             struct arp_header *arp_hdr = (struct arp_header *)(frame_data + sizeof(struct ether_header));
             if (ntohs(arp_hdr->op) == ARPOP_REQUEST) {
+                printf("That was ARPOP_REQUEST\n");
                 send_arp_request(interface, eth_hdr, arp_hdr);
                 continue;
             } else if (ntohs(arp_hdr->op) == ARPOP_REPLY) {
+                printf("That was ARPOP_REPLY\n");
                 send_arp_reply(arp_hdr, &q);
                 continue;
             }
@@ -238,8 +250,10 @@ int main(int argc, char *argv[])
                                        (frame_data + sizeof(struct ether_header) + sizeof(struct iphdr));
 
             struct in_addr ip_router;
+            printf("Passing inet_aton get_interface_ip...\n");
             inet_aton(get_interface_ip(interface), &ip_router);
 
+            printf("Passing send_icmp_echo...\n");
             if (send_icmp_echo(ip_router, eth_hdr, ip_hdr, icmp_hdr,
                                length, frame_data, interface)) {
                 printf("Ended at send_icmp_echo\n");
@@ -247,12 +261,14 @@ int main(int argc, char *argv[])
             }
             
             // Compute checksum
+            printf("Passing checksum...\n");
             if (checksum((uint16_t *)ip_hdr, sizeof(struct iphdr))) {
                 printf("Ended at checksum\n");
                 continue;
             }
             
             // Check for TLE
+            printf("Passing TLE...\n");
             if (ip_hdr->ttl <= 1) {
                 printf("Ended at TLE\n");
                 send_icmp(ip_hdr->saddr, ip_hdr->daddr,
@@ -262,10 +278,13 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            printf("Passing decrease_ttl...\n");
             decrease_ttl(ip_hdr);
+            printf("Passing get_best_route...\n");
             struct route_table_entry *best_route = get_best_route(rtrie, ip_hdr->daddr);
             
             // Check if destination is reachable
+            printf("Passing !best_route...\n");
             if (!best_route) {
                 printf("Ended at best_route\n");
                 send_icmp(ip_hdr->saddr, ip_hdr->daddr,
@@ -275,8 +294,11 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            printf("Passing get_arp_entry...\n");
             struct arp_entry *rentry = get_arp_entry(best_route->next_hop);
+            printf("Passing !rentry...\n");
             if (!rentry) {
+                printf("rentry is NULL\n");
                 missing_mac(length, frame_data, interface, &q, best_route);
                 continue;
             }

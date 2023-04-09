@@ -41,11 +41,12 @@ struct route_table_entry *trie_search(struct trie_node *trie,
     uint32_t ntohl_dest_ip = ntohl(dest_ip);
     for (uint32_t i = 0x80000000; i; i >>= (uint32_t)1) {
         int p = (ntohl_dest_ip & i) ? 1 : 0;
-        printf("%d", p);
         if (!current_node->nodes[p])
             break;
+        printf("%d", p);
         current_node = current_node->nodes[p];
     }
     printf("\n");
+    printf("Something was actually found!\n");
     return (current_node == trie) ? NULL : current_node->rentry;
 }
